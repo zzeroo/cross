@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Support for the `asmjs-unknown-emscripten` and `wasm32-unknown-emscripten`
+  targets
+
 ### Added
 
 - Support for the `arm-unknown-linux-gnueabi` target

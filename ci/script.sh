@@ -13,6 +13,7 @@ main() {
 
     cargo install --path .
 
+    # Minimal testing
     case $TARGET in
         thumbv*-none-eabi*)
             td=$(mktemp -d)
@@ -33,7 +34,9 @@ main() {
         ;;
     esac
 
+    # Test `cross build`
     if [ $TARGET = i686-apple-darwin ] || [ $TARGET = i686-unknown-linux-musl ]; then
+        # No OpenSSL
         td=$(mktemp -d)
 
         git clone --depth 1 https://github.com/japaric/xargo $td
@@ -44,6 +47,7 @@ main() {
 
         rm -rf $td
     else
+        # With OpenSSL
         td=$(mktemp -d)
 
         git clone --depth 1 https://github.com/rust-lang/cargo $td
@@ -55,6 +59,7 @@ main() {
         rm -rf $td
     fi
 
+    # Test `cross test` & `cross run`. Usually involves QEMU
     # NOTE(s390x) japaric/cross#3
     # NOTE(*-musl) can't test compiler-builtins because that crate needs
     # cdylibs and musl targets don't support cdylibs

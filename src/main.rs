@@ -61,6 +61,8 @@ impl<'a> From<&'a str> for Host {
 #[derive(Clone, Copy, PartialEq)]
 pub enum Target {
     Other,
+    AsmjsUnknownEmscripten,
+    Wasm32UnknownEmscripten,
 
     // OSX
     I686AppleDarwin,
@@ -92,7 +94,12 @@ pub enum Target {
 
 impl Target {
     fn has_std(&self) -> bool {
-        !self.is_bare_metal()
+        !self.is_bare_metal() ||
+        match *self {
+            Target::AsmjsUnknownEmscripten |
+            Target::Wasm32UnknownEmscripten => true,
+            _ => false,
+        }
     }
 
     fn is_bare_metal(&self) -> bool {
@@ -127,7 +134,12 @@ impl Target {
     }
 
     fn needs_docker(&self) -> bool {
-        self.is_linux() || self.is_bare_metal()
+        self.is_linux() || self.is_bare_metal() ||
+        match *self {
+            Target::AsmjsUnknownEmscripten |
+            Target::Wasm32UnknownEmscripten => true,
+            _ => false,
+        }
     }
 
     fn needs_qemu(&self) -> bool {
@@ -145,6 +157,14 @@ impl Target {
         self.is_bare_metal()
     }
 
+    fn uses_emcc(&self) -> bool {
+        match *self {
+            Target::AsmjsUnknownEmscripten |
+            Target::Wasm32UnknownEmscripten => true,
+            _ => false,
+        }
+    }
+
     fn triple(&self) -> &'static str {
         use Target::*;
 
@@ -152,6 +172,7 @@ impl Target {
             Aarch64UnknownLinuxGnu => "aarch64-unknown-linux-gnu",
             ArmUnknownLinuxGnueabi => "arm-unknown-linux-gnueabi",
             Armv7UnknownLinuxGnueabihf => "armv7-unknown-linux-gnueabihf",
+            AsmjsUnknownEmscripten => "asmjs-unknown-emscripten",
             I686AppleDarwin => "i686-apple-darwin",
             I686UnknownLinuxGnu => "i686-unknown-linux-gnu",
             I686UnknownLinuxMusl => "i686-unknown-linux-musl",
@@ -168,6 +189,7 @@ impl Target {
             Thumbv7emNoneEabi => "thumbv7em-none-eabi",
             Thumbv7emNoneEabihf => "thumbv7em-none-eabihf",
             Thumbv7mNoneEabi => "thumbv7m-none-eabi",
+            Wasm32UnknownEmscripten => "wasm32-unknown-emscripten",
             X86_64AppleDarwin => "x86_64-apple-darwin",
             X86_64UnknownLinuxGnu => "x86_64-unknown-linux-gnu",
             X86_64UnknownLinuxMusl => "x86_64-unknown-linux-musl",
@@ -187,6 +209,7 @@ impl<'a> From<&'a str> for Target {
             "aarch64-unknown-linux-gnu" => Aarch64UnknownLinuxGnu,
             "arm-unknown-linux-gnueabi" => ArmUnknownLinuxGnueabi,
             "armv7-unknown-linux-gnueabihf" => Armv7UnknownLinuxGnueabihf,
+            "asmjs-unknown-emscripten" => AsmjsUnknownEmscripten,
             "i686-apple-darwin" => I686AppleDarwin,
             "i686-unknown-linux-gnu" => I686UnknownLinuxGnu,
             "i686-unknown-linux-musl" => I686UnknownLinuxMusl,
@@ -202,6 +225,7 @@ impl<'a> From<&'a str> for Target {
             "thumbv7em-none-eabi" => Thumbv7emNoneEabi,
             "thumbv7em-none-eabihf" => Thumbv7emNoneEabihf,
             "thumbv7m-none-eabi" => Thumbv7mNoneEabi,
+            "wasm32-unknown-emscripten" => Wasm32UnknownEmscripten,
             "x86_64-apple-darwin" => X86_64AppleDarwin,
             "x86_64-unknown-linux-gnu" => X86_64UnknownLinuxGnu,
             "x86_64-unknown-linux-musl" => X86_64UnknownLinuxMusl,
