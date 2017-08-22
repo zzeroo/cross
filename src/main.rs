@@ -14,7 +14,6 @@ mod errors;
 mod extensions;
 mod file;
 mod id;
-mod interpreter;
 mod rustc;
 mod rustup;
 
@@ -217,23 +216,6 @@ impl Target {
         !self.is_builtin() || self.is_windows() || self.is_emscripten()
     }
 
-    fn needs_interpreter(&self) -> bool {
-        let not_native = match *self {
-            Target::Custom { ref triple } => {
-                return !triple.starts_with("x86_64") &&
-                       !triple.starts_with("i586") &&
-                       !triple.starts_with("i686")
-            }
-            Target::I686UnknownLinuxGnu |
-            Target::I686UnknownLinuxMusl |
-            Target::X86_64UnknownLinuxGnu |
-            Target::X86_64UnknownLinuxMusl => false,
-            _ => true,
-        };
-
-        not_native && (self.is_linux() || self.is_windows() || self.is_bare_metal())
-    }
-
     fn triple(&self) -> &str {
         use Target::*;
 
@@ -418,12 +400,6 @@ fn run() -> Result<ExitStatus> {
 
             if target.needs_docker() &&
                args.subcommand.map(|sc| sc.needs_docker()).unwrap_or(false) {
-                if args.subcommand.map(|sc| sc.needs_interpreter()).unwrap_or(false) &&
-                   target.needs_interpreter() &&
-                   !interpreter::is_registered(&target)? {
-                    docker::register(&target, verbose)?
-                }
-
                 return docker::run(&target,
                                    &args.all,
                                    &root,

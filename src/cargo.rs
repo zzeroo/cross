@@ -21,13 +21,6 @@ impl Subcommand {
             _ => true,
         }
     }
-
-    pub fn needs_interpreter(&self) -> bool {
-        match *self {
-            Subcommand::Run | Subcommand::Test => true,
-            _ => false,
-        }
-    }
 }
 
 impl<'a> From<&'a str> for Subcommand {
